@@ -1,0 +1,62 @@
+---
+# tasks file for openvas9-install
+  - name: OpenVAS 9 Quick install on Ubuntu 18
+    hosts: all
+    become: yes
+    become_user: root
+    vars:
+      pkgs:
+        - sqlite3
+        - openvas9
+        - texlive-latex-extra
+        - htop
+        - nload
+
+    tasks:
+      - name: Run the equivalent of "apt-get update" as a separate step
+        apt:
+        update_cache: yes
+
+      - name: Adding OpenVAS repo
+        apt_repository: ppa:mrazavi/openvas
+
+      - name: Run the equivalent of "apt-get update" as a separate step
+        apt:
+        update_cache: yes
+
+      - name: Install pre-requisite packages
+        apt: name={{ pkgs }} state=installed
+
+      - name: Update OpenVAS data
+        shell: greenbone-nvt-sync && greenbone-scapdata-sync && greenbone-certdata-sync
+
+      - name: ensure openvas-scanner is running
+        service:
+          name: openvas-scanner
+          state: started
+
+      - name: ensure openvas-manager is running
+        service:
+          name: openvas-manager
+          state: started
+
+      - name: ensure openvas-gsa is running
+        service:
+          name: openvas-gsa
+          state: started
+
+      - name: enable service openvas-scanner 
+        service:
+          name: openvas-scanner
+          enabled: yes
+
+      - name: enable service openvas-manager 
+        service:
+          name: openvas-manager
+          enabled: yes
+
+      - name: enable service openvas-gsa
+        service:
+          name: openvas-gsa
+          enabled: yes
+
